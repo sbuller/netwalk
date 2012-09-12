@@ -622,7 +622,7 @@ void init()
 
     SDL_WM_SetCaption("NetWalk", "NetWalk");
 
-    SDL_EnableKeyRepeat(150, 50);
+    //SDL_EnableKeyRepeat(150, 50);
 }
 
 SDL_Surface *unmarked_tileimg[64];
@@ -639,18 +639,22 @@ int second_count;
 
 void draw_tile(widget_ptr wid, int i, int j)
 {
-    SDL_Rect rect;
-    int index;
+	SDL_Rect rect;
+	int index;
 
-    rect.x = padding + border + i * (cellw + border);
-    rect.y = padding + border + j * (cellh + border);
+	rect.x = padding + border + i * (cellw + border);
+	rect.y = padding + border + j * (cellh + border);
 
-    int const marked = flags[i][j] & 0x1;
-    index = board[i][j] - 1;
-    widget_blit(wid,
-	(marked?marked_tileimg:unmarked_tileimg)[index],
-	NULL,
-	&rect);
+	if (i<0) i+=boardw;
+	if (j<0) j+=boardh;
+	if (i>=boardw) i-=boardw;
+	if (j>=boardh) j-=boardh;
+	int const marked = flags[i][j] & 0x1;
+	index = board[i][j] - 1;
+	widget_blit(wid,
+	            (marked?marked_tileimg:unmarked_tileimg)[index],
+	            NULL,
+	            &rect);
 }
 
 typedef struct {
@@ -798,91 +802,91 @@ void fill_arena_cell(widget_ptr const wid,
 
 void arena_update(widget_ptr wid)
 {
-    int i, j;
-    SDL_Rect rect;
-    int bc;
-    int c;
+	int i, j;
+	SDL_Rect rect;
+	int bc;
+	int c;
 
-    //draw grid
-    rect.x = padding;
-    rect.y = padding;
-    rect.w = cellw * boardw + (boardw + 1) * border;
-    rect.h = border;
+	//draw grid
+	rect.x = padding;
+	rect.y = padding;
+	rect.w = cellw * boardw + (boardw + 1) * border;
+	rect.h = border;
 
-    if (game_won) bc = c_borderwon;
-    else bc = c_border;
+	if (game_won) bc = c_borderwon;
+	else bc = c_border;
 
-    for (i=0; i<=boardh; i++) {
-	widget_fillrect(wid, &rect, bc);
-	rect.y += cellh + border;
-    }
+	for (i=0; i<=boardh; i++) {
+		widget_fillrect(wid, &rect, bc);
+		rect.y += cellh + border;
+	}
 
-    rect.y = padding;
-    rect.w = border;
-    rect.h = cellh * boardh + (boardh + 1) * border;
-    for (i=0; i<=boardw; i++) {
-	widget_fillrect(wid, &rect, bc);
-	rect.x += cellw + border;
-    }
+	rect.y = padding;
+	rect.w = border;
+	rect.h = cellh * boardh + (boardh + 1) * border;
+	for (i=0; i<=boardw; i++) {
+		widget_fillrect(wid, &rect, bc);
+		rect.x += cellw + border;
+	}
 
-    //highlight cursor
-    unsigned int col;
-    unsigned int row;
-    if(get_cell_from_mouse_position(wid,lastmousex,lastmousey,&col,&row) == 0)
-    {
-	/* highlight the cell the mouse is pointing at */
-	fill_arena_cell(wid,col,row,c_highlight);
-
-	if(wrap_flag)
+	//highlight cursor
+	unsigned int col;
+	unsigned int row;
+	if(get_cell_from_mouse_position(wid,lastmousex,lastmousey,&col,&row) == 0)
 	{
-		/*
-		 * If the highlighted cell is an edge cell, also
-		 * highlight the corresponding cells on opposite
-		 * edges.  This will make it easier to work with large
-		 * wrapped grids.
-		 */
-		if(col == 0)
-			fill_arena_cell(wid,boardw - 1,row,c_edgematch);
-		else
-		if(col == boardw - 1)
-			fill_arena_cell(wid,0,row,c_edgematch);
+		/* highlight the cell the mouse is pointing at */
+		fill_arena_cell(wid,col,row,c_highlight);
 
-		if(row == 0)
-			fill_arena_cell(wid,col,boardh - 1,c_edgematch);
-		else
-		if(row == boardh - 1)
-			fill_arena_cell(wid,col,0,c_edgematch);
+		if(wrap_flag)
+		{
+			/*
+			 * If the highlighted cell is an edge cell, also
+			 * highlight the corresponding cells on opposite
+			 * edges.  This will make it easier to work with large
+			 * wrapped grids.
+			 */
+			if(col == 0)
+				fill_arena_cell(wid,boardw - 1,row,c_edgematch);
+			else
+				if(col == boardw - 1)
+					fill_arena_cell(wid,0,row,c_edgematch);
+
+			if(row == 0)
+				fill_arena_cell(wid,col,boardh - 1,c_edgematch);
+			else
+				if(row == boardh - 1)
+					fill_arena_cell(wid,col,0,c_edgematch);
+		}
 	}
-    }
 
-    //draw in tiles
-    for (i=0; i<boardw; i++) {
-	for (j=0; j<boardh; j++) {
-	    if (board[i][j]) {
-		draw_tile(wid, i, j);
-	    }
+	//draw in tiles
+	for (i=-1; i<=boardw; i++) {
+		for (j=-1; j<=boardh; j++) {
+			if (board[i][j]) {
+				draw_tile(wid, i, j);
+			}
+		}
 	}
-    }
-    //draw server
-    if (game_won) c = c_serverwon;
-    else c = c_server;
+	//draw server
+	if (game_won) c = c_serverwon;
+	else c = c_server;
 
-    rect.x = padding + border + (cellw + border) * sourcex;
-    rect.y = padding + border + (cellh + border) * sourceytop;
+	rect.x = padding + border + (cellw + border) * sourcex;
+	rect.y = padding + border + (cellh + border) * sourceytop;
 
-    rect.x += 5;
-    rect.y += 5;
-    rect.w = cellw - 10;
-    rect.h = cellh - 5;
-    widget_fillrect(wid, &rect, c);
+	rect.x += 5;
+	rect.y += 5;
+	rect.w = cellw - 10;
+	rect.h = cellh - 5;
+	widget_fillrect(wid, &rect, c);
 
-    rect.y = padding + border + (cellh + border) * sourceybottom;
-    widget_fillrect(wid, &rect, c);
+	rect.y = padding + border + (cellh + border) * sourceybottom;
+	widget_fillrect(wid, &rect, c);
 
-    //victory animation
-    if (game_won) {
-	animate_pulse(wid);
-    }
+	//victory animation
+	if (game_won) {
+		animate_pulse(wid);
+	}
 }
 
 char* read_field(FILE *fp)
@@ -1317,37 +1321,42 @@ void arena_handle_click(widget_ptr p, int button, int x, int y)
     }
 
     //temporarily merge server squares
-    board[sourcex][sourceybottom] |= board[sourcex][sourceytop] & 1;
-    if (i == sourcex && j == sourceytop) {
-	j = sourceybottom;
-    }
-    d = board[i][j] & 15;
-    switch(button) {
-	case SDL_BUTTON_LEFT:
-	    d = rotatecw(d, 3);
-	    increment_move_count();
-	    break;
-	case SDL_BUTTON_RIGHT:
-	    d = rotatecw(d, 1);
-	    increment_move_count();
-	    break;
-    }
-    board[i][j] &= ~15;
-    board[i][j] += d;
+	board[sourcex][sourceybottom] |= board[sourcex][sourceytop] & 1;
+	if (i == sourcex && j == sourceytop) {
+		j = sourceybottom;
+	}
 
-    board[sourcex][sourceytop] &= ~1;
-    board[sourcex][sourceytop] |= board[sourcex][sourceybottom] & 1;
-    board[sourcex][sourceybottom] &= ~1;
+	if (!flags[i][j]) {
+		d = board[i][j] & 15;
+		switch(button) {
+			case SDL_BUTTON_LEFT:
+			case SDL_BUTTON_WHEELUP:
+				d = rotatecw(d, 3);
+				increment_move_count();
+				break;
+			case SDL_BUTTON_RIGHT:
+			case SDL_BUTTON_WHEELDOWN:
+				d = rotatecw(d, 1);
+				increment_move_count();
+				break;
+		}
+		board[i][j] &= ~15;
+		board[i][j] += d;
+	}
 
-    if(button == SDL_BUTTON_MIDDLE)
-	flags[i][j] ^= 0x1;
+	board[sourcex][sourceytop] &= ~1;
+	board[sourcex][sourceytop] |= board[sourcex][sourceybottom] & 1;
+	board[sourcex][sourceybottom] &= ~1;
 
-    check_live();
-    if (game_won) {
-	pulse_count = 0;
+	if(button == SDL_BUTTON_MIDDLE)
+		flags[i][j] ^= 0x1;
 
-	check_hs();
-    }
+	check_live();
+	if (game_won) {
+		pulse_count = 0;
+
+		check_hs();
+	}
 }
 
 void quit()
@@ -1391,6 +1400,82 @@ void set_level(widget_ptr w, void *data)
     new_game();
 }
 
+void shuffle_rows_down(void) {
+	int temp_flags[boardw];
+	int temp_board[boardw];
+	int i,j;
+	for (i=0; i<boardw; i++) {
+		temp_flags[i] = flags[i][boardh-1];
+		temp_board[i] = board[i][boardh-1];
+	}
+	for (j=boardh-1; j>0; j--)
+		for (i=0; i<boardw; i++) {
+			flags[i][j] = flags[i][j-1];
+			board[i][j] = board[i][j-1];
+		}
+	for (i=0; i<boardw; i++) {
+		flags[i][0] = temp_flags[i];
+		board[i][0] = temp_board[i];
+	}
+}
+
+void shuffle_rows_up(void) {
+	int temp_flags[boardw];
+	int temp_board[boardw];
+	int i,j;
+	for (i=0; i<boardw; i++) {
+		temp_flags[i] = flags[i][0];
+		temp_board[i] = board[i][0];
+	}
+	for (j=0; j<boardh-1; j++)
+		for (i=0; i<boardw; i++) {
+			flags[i][j] = flags[i][j+1];
+			board[i][j] = board[i][j+1];
+		}
+	for (i=0; i<boardw; i++) {
+		flags[i][boardh-1] = temp_flags[i];
+		board[i][boardh-1] = temp_board[i];
+	}
+}
+
+void shuffle_cols_right(void) {
+	int temp_flags[boardh];
+	int temp_board[boardh];
+	int i,j;
+	for (j=0; j<boardh; j++) {
+		temp_flags[j] = flags[boardw-1][j];
+		temp_board[j] = board[boardw-1][j];
+	}
+	for (i=boardw-1; i>0; i--)
+		for (j=0; j<boardh; j++) {
+			flags[i][j] = flags[i-1][j];
+			board[i][j] = board[i-1][j];
+		}
+	for (j=0; j<boardh; j++) {
+		flags[0][j] = temp_flags[j];
+		board[0][j] = temp_board[j];
+	}
+}
+
+void shuffle_cols_left(void) {
+	int temp_flags[boardh];
+	int temp_board[boardh];
+	int i,j;
+	for (j=0; j<boardw; j++) {
+		temp_flags[j] = flags[0][j];
+		temp_board[j] = board[0][j];
+	}
+	for (i=0; i<boardh-1; i++)
+		for (j=0; j<boardw; j++) {
+			flags[i][j] = flags[i+1][j];
+			board[i][j] = board[i+1][j];
+		}
+	for (j=0; j<boardw; j++) {
+		flags[boardh-1][j] = temp_flags[j];
+		board[boardh-1][j] = temp_board[j];
+	}
+}
+
 void handle_key(int key, int mod)
 {
     if (openedmenu) {
@@ -1401,45 +1486,73 @@ void handle_key(int key, int mod)
 	return;
     }
 
-    if (enkludge) {
-	switch(key) {
-	    case SDLK_LEFT:
-		textbox_left(tb_en1);
-		break;
-	    case SDLK_RIGHT:
-		textbox_right(tb_en1);
-		break;
-	    case SDLK_DELETE:
-		textbox_delete(tb_en1);
-		break;
-	    case SDLK_BACKSPACE:
-		textbox_backspace(tb_en1);
-		break;
-	    default:
-		if (key < 256 && key >= 32) {
-		    if (mod & KMOD_SHIFT) {
-			textbox_insert(tb_en1, shifttable[key]);
-		    } else {
-			textbox_insert(tb_en1, key);
-		    }
+	if (enkludge) {
+		switch(key) {
+			case SDLK_LEFT:
+				textbox_left(tb_en1);
+				break;
+			case SDLK_RIGHT:
+				textbox_right(tb_en1);
+				break;
+			case SDLK_DELETE:
+				textbox_delete(tb_en1);
+				break;
+			case SDLK_BACKSPACE:
+				textbox_backspace(tb_en1);
+				break;
+			case SDLK_RETURN:
+				enter_name_close();
+			default:
+				if (key < 256 && key >= 32) {
+					if (mod & KMOD_SHIFT) {
+						textbox_insert(tb_en1, shifttable[key]);
+					} else {
+						textbox_insert(tb_en1, key);
+					}
+				}
+				break;
 		}
-		break;
+			return;
 	}
-	return;
-    }
 
-    switch(key) {
-	case SDLK_d:
-	    enter_name_open();
-	    break;
-	case SDLK_ESCAPE:
-	case SDLK_q:
-	    quit();
-	    break;
-	case SDLK_F2:
-	    new_game();
-	    break;
-    }
+	int x, y, i, j;
+	switch(key) {
+		case SDLK_d:
+			enter_name_open();
+			break;
+		case SDLK_UP:
+			sourceytop = (sourceytop + boardh - 1) % boardh; //cyclic subtraction
+			sourceybottom = (sourceybottom + boardh - 1) % boardh;
+			shuffle_rows_up();
+			break;
+		case SDLK_DOWN:
+			sourceytop = (sourceytop + 1) % boardh;
+			sourceybottom = (sourceybottom + 1) % boardh;
+			shuffle_rows_down();
+			break;
+		case SDLK_RIGHT:
+			sourcex = (sourcex + 1) % boardw;
+			shuffle_cols_right();
+			break;
+		case SDLK_LEFT:
+			sourcex = (sourcex + boardw - 1) % boardw;
+			shuffle_cols_left();
+			break;
+		case SDLK_ESCAPE:
+		case SDLK_q:
+			quit();
+			break;
+		case SDLK_F2:
+			new_game();
+			break;
+		case SDLK_SPACE:
+			SDL_GetMouseState(&x,&y);
+			i = (x - padding - border) / (cellw + border);
+			j = (y - padding - border - 18) / (cellh + border); //not sure what's goin on here
+			if (i >= boardw || j >= boardh) break;
+			flags[i][j] ^= 0x1;
+			break;
+	}
 }
 
 void update_screen()
