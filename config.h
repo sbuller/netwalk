@@ -4,10 +4,10 @@
 #include <stdio.h>
 
 struct config_s {
-    char *fontname;
-    char *hsfile;
-    int fontsize;
-    int showmoves;
+	char *fontname;
+	char *hsfile;
+	int fontsize;
+	int showmoves;
 };
 typedef struct config_s *config_ptr;
 typedef struct config_s config_t[1];

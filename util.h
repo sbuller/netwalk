@@ -6,9 +6,9 @@
 
 static inline char *clonestr(char *s)
 {
-    char *res = malloc(sizeof(char) * strlen(s) + 1);
-    strcpy(res, s);
-    return res;
+	char *res = malloc(sizeof(char) * strlen(s) + 1);
+	strcpy(res, s);
+	return res;
 }
 
 #endif //UTIL_H
