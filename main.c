@@ -627,6 +627,8 @@ void init()
 
 SDL_Surface *unmarked_tileimg[64];
 SDL_Surface *marked_tileimg[64];
+SDL_Surface *border_marked_tileimg[64];
+SDL_Surface *border_unmarked_tileimg[64];
 int level = level_medium;
 int tick;
 int tick_old;
@@ -641,20 +643,28 @@ void draw_tile(widget_ptr wid, int i, int j)
 {
 	SDL_Rect rect;
 	int index;
+	int borderflag = 0;
 
 	rect.x = padding + border + i * (cellw + border);
 	rect.y = padding + border + j * (cellh + border);
 
-	if (i<0) i+=boardw;
-	if (j<0) j+=boardh;
-	if (i>=boardw) i-=boardw;
-	if (j>=boardh) j-=boardh;
+	if (i<0) { i+=boardw; borderflag=1; }
+	if (j<0) { j+=boardh; borderflag=1; }
+	if (i>=boardw) { i-=boardw; borderflag=1; }
+	if (j>=boardh) { j-=boardh; borderflag=1; }
 	int const marked = flags[i][j] & 0x1;
 	index = board[i][j] - 1;
-	widget_blit(wid,
-			(marked?marked_tileimg:unmarked_tileimg)[index],
-			NULL,
-			&rect);
+	if (borderflag) {
+		widget_blit(wid,
+				(marked?border_marked_tileimg:border_unmarked_tileimg)[index],
+				NULL,
+				&rect);
+	} else {
+		widget_blit(wid,
+				(marked?marked_tileimg:unmarked_tileimg)[index],
+				NULL,
+				&rect);
+	}
 }
 
 typedef struct {
@@ -862,9 +872,7 @@ void arena_update(widget_ptr wid)
 	//draw in tiles
 	for (i=-1; i<=boardw; i++) {
 		for (j=-1; j<=boardh; j++) {
-			if (board[i][j]) {
-				draw_tile(wid, i, j);
-			}
+			draw_tile(wid, i, j);
 		}
 	}
 	//draw server
@@ -1839,6 +1847,8 @@ int main(int argc, char *argv[])
 
 	init_tileimg(unmarked_tileimg,c_unmarkedbg);
 	init_tileimg(marked_tileimg,c_markedbg);
+	init_tileimg(border_unmarked_tileimg,c_bunmarkedbg);
+	init_tileimg(border_marked_tileimg,c_bmarkedbg);
 	new_game();
 
 	while (state != state_quit && !interrupted) {
