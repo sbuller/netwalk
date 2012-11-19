@@ -46,6 +46,8 @@ enum {
     c_pulse,
     c_unmarkedbg,
     c_markedbg,
+    c_bunmarkedbg,
+    c_bmarkedbg,
     c_max
 };
 

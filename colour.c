@@ -44,20 +44,22 @@ void init_rgbtable()
     init_rgb(c_invtext, 0, 0, 0);
     init_rgb(c_canvas, 0, 0, 0);
     init_rgb(c_buttonborder, 0, 127, 0);
-    init_rgb(c_server, 0, 0, 191);
-    init_rgb(c_serverwon, 0, 0, 255);
-    init_rgb(c_on, 0, 255, 0);
-    init_rgb(c_off, 127, 0, 0);
-    init_rgb(c_up, 0, 255, 255);
-    init_rgb(c_down, 127, 0, 127);
+    init_rgb(c_server, 0, 0, 0);
+    init_rgb(c_serverwon, 128, 0, 255);
+    init_rgb(c_up, 0, 128, 128);
+    init_rgb(c_down, 0, 0, 255);
+    init_rgb(c_on, 0, 128, 128);
+    init_rgb(c_off, 0, 0, 0);
     init_rgb(c_windowborder, 0, 255, 0);
     init_rgb(c_pulse, 255, 255, 255);
     init_rgb(c_borderwon, 0, 127, 127);
-    init_rgb(c_border, 0, 127, 0);
+    init_rgb(c_border, 110, 109, 106);
     /* background color for unmarked tile */
-    init_rgb(c_unmarkedbg, 0, 0, 0);
+    init_rgb(c_unmarkedbg, 220, 218, 213);
+    init_rgb(c_bunmarkedbg, 110, 109, 107);
     /* background color for marked tile */
-    init_rgb(c_markedbg, 0, 0, 127);
+    init_rgb(c_markedbg, 165, 164, 160);
+    init_rgb(c_bmarkedbg, 83, 82, 80);
 }
 
 void init_ctable(SDL_PixelFormat *format)
